@@ -1,8 +1,8 @@
 import scraper
 import sqlite3
 import sys
-import cgi
-import urllib
+#import cgi
+#import urllib
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 target_url = 'https://yukonenergy.ca/consumption/chart.php?chart=hourly&width=500&height=600'
