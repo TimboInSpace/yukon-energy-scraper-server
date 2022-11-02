@@ -2,8 +2,7 @@
 Gets data from an applet on a certain website, collects data into sqlite db, then serves data via http
 
 ## Instructions
-Download repository into a directory
-Install dependencies:
+Download repository into a directory. Install dependencies:
 ```
 pip install selenium
 pip install sqlite3
