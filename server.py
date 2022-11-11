@@ -1,8 +1,9 @@
+#!/usr/bin/python3
+
 import scraper
 import sqlite3
 import sys
-import cgi
-import urllib
+import csv
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 target_url = 'https://yukonenergy.ca/consumption/chart.php?chart=hourly&width=500&height=600'
@@ -40,17 +41,49 @@ class MyServer(SimpleHTTPRequestHandler):
         #rows = [f(x) for x in y if c]
         rows = [ f'<tr> <td>{x[1]}</td> <td>{x[2]}</td> <td>{x[3]}</td> </tr>' for x in data ]
         return f'<table> <tr> <th>Timestamp</th> <th>Hydro</th> <th>Thermal</th> </tr> {" ".join(rows)} </table>'
+
+    def dump_csv(self, data):
+        with open('data.csv', 'w', newline='') as csvfile:
+            fields = ['timestamp', 'hydro', 'thermal']
+            writer = csv.DictWriter(csvfile, fieldnames=fields)
+            # Write the header
+            writer.writeheader()
+            # Write the rows
+            for x in data:
+                writer.writerow({'timestamp':x[1], 'hydro':x[2], 'thermal':x[3]}) 
     
     def do_GET(self):
-        html = self.read_html('index.html')
-        q = db.cursor()
-        q.execute('SELECT * FROM DATA')
-        res = q.fetchall()
-        table = self.render_table(res)
-        html = html.replace('[##CONTENT##]', table, 1)
-        self.send_response(200, 'OK')
-        self.end_headers()
-        self.wfile.write(bytes(html, 'utf-8'))
+        if (self.path == '/' or self.path.lower() == '/index.html'):
+            html = self.read_html('index.html')
+            q = db.cursor()
+            q.execute('SELECT * FROM DATA')
+            res = q.fetchall()
+            table = self.render_table(res)
+            html = html.replace('[##CONTENT##]', table, 1)
+            self.send_response(200, 'OK')
+            self.end_headers()
+            self.wfile.write(bytes(html, 'utf-8'))
+        elif (self.path.lower() == '/csv'):
+            q = db.cursor()
+            q.execute('SELECT * FROM DATA')
+            res = q.fetchall()
+            self.dump_csv(res)
+            self.send_response(302, 'Found')
+            self.send_header('Location', '/data.csv')
+            self.end_headers()
+            self.wfile.write(bytes('Redirecting you to the csv file...', 'utf-8'))
+        elif (self.path.lower() == '/data.csv'):
+            csv = bytes(self.read_html('data.csv'), 'utf-8')
+            self.send_response(200, 'OK')
+            self.send_header('Content-Type', 'text/csv')
+            self.send_header('Content-Length', len(csv))
+            self.end_headers()
+            self.wfile.write(csv)
+        else:
+            self.send_response(404, 'Not found')
+            self.end_headers()
+            self.wfile.write(bytes('The requested page was not found.', 'utf-8'))
+
 
 if __name__ == '__main__':
     print('Initializing server...')
