@@ -3,12 +3,7 @@
 import scraper
 import sqlite3
 import sys
-<<<<<<< HEAD
 import csv
-=======
-#import cgi
-#import urllib
->>>>>>> 8826244cdefd0dbd2bda17fade94faa1b317c1dd
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 
 target_url = 'https://yukonenergy.ca/consumption/chart.php?chart=hourly&width=500&height=600'
