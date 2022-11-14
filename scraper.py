@@ -44,10 +44,13 @@ def dataDatetime(time_str, dt):
 Make an array of dictionaries. Each dictionary represents one sample
 '''
 def getChartData(url):
-    driver = webdriver.Firefox()
+    fireFoxOptions = webdriver.FirefoxOptions()
+    fireFoxOptions.add_argument('--headless')
+    fireFoxOptions.add_argument('--window-size=1920x1080')
+    driver = webdriver.Firefox(options=fireFoxOptions)
     driver.implicitly_wait(0.5)
     driver.get(url)
-    # Get the current date/tim
+    # Get the current date/time
     eleTime = driver.find_element(By.CLASS_NAME, 'current_time')
     eleDate = driver.find_element(By.CLASS_NAME, 'current_date')
     # If we couldnt find the time/date, just give up now
