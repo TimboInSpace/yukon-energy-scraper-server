@@ -90,10 +90,13 @@ class MyServer(SimpleHTTPRequestHandler):
 def scraper_worker(interval_seconds):
     thread_db_conn = sqlite3.connect('sql.db')
     while True:
-        print(f'Scraping target: {target_url}')
-        data = scraper.getChartData(target_url)
-        scraper.updateDB(data, thread_db_conn)
-        time.sleep(interval_seconds)
+        try:
+            print(f'({time.strftime("%c", time.localtime())}) Scraping target: {target_url}')
+            data = scraper.getChartData(target_url)
+            scraper.updateDB(data, thread_db_conn)
+            time.sleep(interval_seconds)
+        except:
+            print(f'({time.strftime("%c", time.localtime())}) An error occurred while attempting to scrape the target.')
 
 if __name__ == '__main__':
     print('Initializing server...')
