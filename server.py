@@ -5,11 +5,14 @@ import sqlite3
 import sys
 import csv
 from http.server import HTTPServer, SimpleHTTPRequestHandler
+import time
+import threading
 
 target_url = 'https://yukonenergy.ca/consumption/chart.php?chart=hourly&width=500&height=600'
 
 HOSTNAME = "localhost"
 PORT = 8080
+SCRAPER_INTERVAL = 60 * 60 * 3 # 3 hours, in seconds.
 
 if (len(sys.argv) > 1 and int(sys.argv[1]) > 0):
     PORT = sys.argv[1]
@@ -84,16 +87,23 @@ class MyServer(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(bytes('The requested page was not found.', 'utf-8'))
 
+def scraper_worker(interval_seconds):
+    thread_db_conn = sqlite3.connect('sql.db')
+    while True:
+        print(f'Scraping target: {target_url}')
+        data = scraper.getChartData(target_url)
+        scraper.updateDB(data, thread_db_conn)
+        time.sleep(interval_seconds)
 
 if __name__ == '__main__':
     print('Initializing server...')
     global db
     db = sqlite3.connect('sql.db')
-    data = scraper.getChartData(target_url)
-    scraper.updateDB(data, db)
     srv = HTTPServer( (HOSTNAME,PORT), MyServer)
+    scraperThread = threading.Thread(target=scraper_worker, args=(SCRAPER_INTERVAL,), daemon=True)
     try:
         print(f'Server listening on port {PORT}')
+        scraperThread.start()
         srv.serve_forever()
     except KeyboardInterrupt:
         print('\nClosing server.')
