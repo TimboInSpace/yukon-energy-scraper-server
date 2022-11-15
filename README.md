@@ -9,7 +9,7 @@ Install selenium with firefox webdriver
 ```
 pip install selenium
 ```
-Obtain the firefox (Gecko) (webdriver)[https://github.com/mozilla/geckodriver/releases]. 
+Obtain the firefox (Gecko) [webdriver](https://github.com/mozilla/geckodriver/releases). 
 Follow the installation instructions to ensure the geckodriver is in your PATH.
 
 ## Usage
