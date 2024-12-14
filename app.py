@@ -73,6 +73,7 @@ def generate_csv():
         cursor.execute("SELECT * FROM data")
         rows = cursor.fetchall()
         fields = [description[0] for description in cursor.description]
+        delete_csv_files('./csv')
         dump_csv(rows, file_path)
         return send_file(file_path, as_attachment=True), 201
     finally:
