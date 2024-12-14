@@ -4,11 +4,12 @@ FROM python:3.11-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy the current directory contents into the container at /app
-COPY . /app
+# Copy requirements list and install dependencies
+COPY requirements.txt requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies
-#RUN pip install --no-cache-dir -r requirements.txt
+# Copy the current directory contents into the container at /app
+COPY . .
 
 # Initialize the SQLite database if it doesn't exist
 #RUN ls | grep sql.db > /dev/null || cat schema.sql | sqlite3 sql.db

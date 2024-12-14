@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
     environment:
-      - FLASK_ENV=production
+      - FLASK_ENV=development
     networks:
       - reverse_proxy
 
