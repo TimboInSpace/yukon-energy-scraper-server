@@ -2,6 +2,7 @@
 import sqlite3
 import datetime
 from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
@@ -15,6 +16,9 @@ qryTransfer =   '''INSERT OR IGNORE INTO DATA (timestamp, hydro, thermal) SELECT
 qryDropTemp =   '''DROP TABLE IF EXISTS TEMP;'''
 qryCountData =  '''SELECT COUNT(*) FROM DATA;'''
 
+db = None
+
+
 '''
 Make a datetime object out of the two strings from the website
 '''
@@ -25,6 +29,7 @@ def datetimeOf(strDate, strTime):
     format = '%I:%M %p %A, %B %d, %Y'
     dt = datetime.datetime.strptime(s, format)
     return dt
+
 
 '''
 Make a datetime object out of the timestamp string and the current datetime
@@ -40,6 +45,7 @@ def dataDatetime(time_str, dt):
         t = t - datetime.timedelta(days=1)
     return t
 
+
 '''
 Make an array of dictionaries. Each dictionary represents one sample
 '''
@@ -47,7 +53,7 @@ def getChartData(url):
     fireFoxOptions = webdriver.FirefoxOptions()
     fireFoxOptions.add_argument('--headless')
     fireFoxOptions.add_argument('--window-size=1920x1080')
-    driver = webdriver.Firefox(options=fireFoxOptions)
+    driver = webdriver.Firefox(options=fireFoxOptions, service=Service('/snap/bin/geckodriver'))
     driver.implicitly_wait(0.5)
     driver.get(url)
     # Get the current date/time
@@ -79,6 +85,7 @@ def getChartData(url):
         d['timestamp'] = dataDatetime(d['timestr'], cur_dt)
     driver.quit()
     return data
+
 
 '''
 Update the database with the data collected. Some of the data may have already been recorded. 
@@ -117,6 +124,30 @@ def countData(conn):
     q.execute(qryCountData)
     (count,) = q.fetchone()
     return count
+    
+
+'''
+Connect to the DB as a singleton
+'''
+def singletonConnect():
+    global db
+    if db is not None:
+        return db
+    try:
+        db = sqlite3.connect('sql.db')
+    except Exception as e:
+        print(f'Failed to connect to database ./sql.db')
+    return db
+
+
+'''
+Single function to collect data and update the database
+'''
+def scrapeAndUpdate():
+    global db
+    db = singletonConnect()
+    data = getChartData(target_url)
+    updateDB(data, db)
 
 if __name__ == '__main__':
     print(f'Running scraper on {target_url}')
