@@ -8,13 +8,13 @@ WORKDIR /app
 COPY . /app
 
 # Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+#RUN pip install --no-cache-dir -r requirements.txt
 
 # Initialize the SQLite database if it doesn't exist
-RUN ls | grep sql.db > /dev/null || cat schema.sql | sqlite3 sql.db
+#RUN ls | grep sql.db > /dev/null || cat schema.sql | sqlite3 sql.db
 
 # Expose the port the app runs on
-EXPOSE 5000
+#EXPOSE 5000
 
 # Define environment variable to run Flask in development mode
 #ENV FLASK_APP=app.py
