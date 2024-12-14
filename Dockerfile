@@ -1,5 +1,8 @@
 FROM python:3.11-alpine
 
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 # Set the working directory in the container
 WORKDIR /app
 
@@ -23,5 +26,4 @@ COPY . .
 # Run the Flask app
 #CMD ["flask", "run"]
 
-CMD ["bash"]
-
+CMD ["/bin/ash"]
