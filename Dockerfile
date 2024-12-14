@@ -21,5 +21,7 @@ EXPOSE 5000
 #ENV FLASK_RUN_HOST=0.0.0.0
 
 # Run the Flask app
-CMD ["python3", "/app/app.py"]
+#CMD ["flask", "run"]
+
+CMD ["tail", "-f", "/dev/null"]
 
