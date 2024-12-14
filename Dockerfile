@@ -21,5 +21,5 @@ ENV FLASK_APP=app.py
 ENV FLASK_RUN_HOST=0.0.0.0
 
 # Run the Flask app
-CMD ["python3", "app.py"]
+CMD ["flask", "run"]
 
