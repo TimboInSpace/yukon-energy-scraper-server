@@ -26,4 +26,5 @@ COPY . .
 # Run the Flask app
 #CMD ["flask", "run"]
 
-CMD ["/bin/ash"]
+CMD ["ash"]
+#CMD ["sleep", "infinity"]
