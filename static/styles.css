@@ -5,6 +5,7 @@
 .download-button {
     top: 2rem;
     right: 2rem;
+    float: right;
 }
 
 .download-button button {
