@@ -7,7 +7,22 @@ import time
 import threading
 from scraper import scrapeAndUpdate
 
+
 app = Flask(__name__)
+
+
+def delete_csv_files(directory='./csv'):
+    if not os.path.exists(directory):
+        print(f"The directory '{directory}' does not exist.")
+        return
+    for f in os.listdir(directory):
+        fp = os.path.join(directory, f)
+        if f.endswith('.csv') and os.path.isfile(fp):
+            try:
+                os.remove(fp)
+                print(f"Deleted: {fp}")
+            except OSError as e:
+                print(f"Error deleting file {fp}: {e}")
 
 
 def dump_csv(data, file_path):
