@@ -10,6 +10,11 @@ services:
       - FLASK_ENV=development
     networks:
       - reverse_proxy
+    volumes:
+      - yukon-energy-data:/app
+      
+volumes:
+  yukon-energy-data: {}
 
 networks:
   reverse_proxy:
