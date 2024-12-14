@@ -17,9 +17,9 @@ RUN ls | grep sql.db > /dev/null || cat schema.sql | sqlite3 sql.db
 EXPOSE 5000
 
 # Define environment variable to run Flask in development mode
-ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=0.0.0.0
+#ENV FLASK_APP=app.py
+#ENV FLASK_RUN_HOST=0.0.0.0
 
 # Run the Flask app
-CMD ["flask", "run"]
+CMD ["python3", "/app/app.py"]
 
