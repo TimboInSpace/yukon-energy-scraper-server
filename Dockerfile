@@ -21,7 +21,7 @@ EXPOSE 5000
 
 # Define environment variable to run Flask in development mode
 ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=192.168.32.0
+ENV FLASK_RUN_HOST=yukon-energy
 
 # Run the Flask app
 CMD ["flask", "run"]
