@@ -2,13 +2,21 @@
     letter-spacing: 0.15rem;
     text-transform: uppercase;
 }
-.download-button {
+.floating-button {
     top: 2rem;
+}
+
+.csv-download-button {
     right: 2rem;
     float: right;
 }
 
-.download-button button {
+.log-file-button {
+    left: 2rem:
+    float: left;
+}
+
+.floating-button button {
     width: 2.5rem;
     height: 2.5rem;
     background-color: #4faaf9;
@@ -17,19 +25,19 @@
     z-index: 10;
     transition: all ease-in-out 0.3s;
 }
-.download-button button:hover {
+.floating-button button:hover {
     background-color: #f7744c;
 }
-.download-button i::before {
+.floating-button i::before {
     font-size: 1rem;
     text-shadow: 0 0 0.2rem black;
 }
 @media screen and (min-width: 577px) {
-    .download-button button {
+    .floating-button button {
         width: 5rem;
         height: 5rem;
     }
-    .download-button i::before {
+    .floating-button i::before {
         font-size: 2rem;
         text-shadow: 0 0 0.3rem black;
     }
@@ -52,3 +60,5 @@ thead {
     top: 0;
     z-index: 1;
 }
+
+

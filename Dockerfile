@@ -1,5 +1,8 @@
 FROM python:3.11-alpine
 
+RUN apk update && apk upgrade
+RUN apk add --no-cache sqlite firefox vim   # firefox-esr doesnt work for this!
+
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
@@ -14,16 +17,15 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Initialize the SQLite database if it doesn't exist
-RUN ls | grep sql.db > /dev/null || cat schema.sql | sqlite3 sql.db
+RUN ls ./data | grep sql.db > /dev/null || cat schema.sql | sqlite3 ./data/sql.db
 
 # Expose the port the app runs on
 EXPOSE 5000
 
 # Define environment variable to run Flask in development mode
 ENV FLASK_APP=app.py
-ENV FLASK_RUN_HOST=yukon-energy
+ENV FLASK_RUN_HOST=yukon-energy   # only applicable if doing "flask run". Otherwise, see override inside app.py
 
 # Run the Flask app
-CMD ["flask", "run"]
-
-#CMD ["sleep", "infinity"]
+#CMD ["flask", "run"]   # Dont do it this way, or the setup "__main__" code wont run!
+CMD ["python3", "app.py"]

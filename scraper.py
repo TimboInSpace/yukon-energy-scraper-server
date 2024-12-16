@@ -16,8 +16,6 @@ qryTransfer =   '''INSERT OR IGNORE INTO DATA (timestamp, hydro, thermal) SELECT
 qryDropTemp =   '''DROP TABLE IF EXISTS TEMP;'''
 qryCountData =  '''SELECT COUNT(*) FROM DATA;'''
 
-db = None
-
 
 '''
 Make a datetime object out of the two strings from the website
@@ -50,10 +48,13 @@ def dataDatetime(time_str, dt):
 Make an array of dictionaries. Each dictionary represents one sample
 '''
 def getChartData(url):
-    fireFoxOptions = webdriver.FirefoxOptions()
-    fireFoxOptions.add_argument('--headless')
-    fireFoxOptions.add_argument('--window-size=1920x1080')
-    driver = webdriver.Firefox(options=fireFoxOptions, service=Service('/snap/bin/geckodriver'))
+    firefoxOptions = webdriver.FirefoxOptions()
+    firefoxOptions.add_argument("--headless")
+    firefoxOptions.add_argument("--no-sandbox")
+    firefoxOptions.add_argument("--disable-dev-shm-usage")
+    service = Service("/app/geckodriver")
+    #driver = webdriver.Firefox(options=firefoxOptions, service=Service('/snap/bin/geckodriver'))
+    driver = webdriver.Firefox(options=firefoxOptions, service=service)
     driver.implicitly_wait(0.5)
     driver.get(url)
     # Get the current date/time
@@ -84,36 +85,40 @@ def getChartData(url):
     for d in data:
         d['timestamp'] = dataDatetime(d['timestr'], cur_dt)
     driver.quit()
-    return data
+    return (cur_dt, data)
 
 
 '''
 Update the database with the data collected. Some of the data may have already been recorded. 
+Do this by writing the data into a temp table, then transfering the temp table into the main table
+See these queries:
+ - qryDropTemp
+ - qryCreateTemp
+ - qryInsertTemp
+ - qryTransfer
 '''
-def updateDB(data, conn):
-    beforeCount = countData(conn)
-    # Get cursor from connection
-    q = conn.cursor()
-    # Drop the temp table (if it exists)
-    q.execute(qryDropTemp)
-    # Create the temp table
-    q.execute(qryCreateTemp)
-    # For each dictionary in data, insert another entry into the temp table
-    for d in data:
-        tup = (d['timestamp'], d['hydro'], d['thermal'])
-        q.execute(qryInsertTemp, tup)
-    conn.commit()
-    # Transfer the TEMP table to the main table
-    # INSERT INTO DATA (timestamp, hydro, thermal) 
-    # SELECT * FROM TEMP LEFT OUTER JOIN DATA ON DATA.timestamp = TEMP.timestamp WHERE TEMP.timestamp IS NULL
-    # OR
-    # INSERT OR IGNORE INTO DATA (timestamp, hydro, thermal) SELECT timestamp, hydro, thermal FROM TEMP
-    q.execute(qryTransfer)
-    # Drop the temp table
-    q.execute(qryDropTemp)
-    conn.commit()
-    afterCount = countData(conn)
-    print(f'Updated database: added {afterCount - beforeCount} records ({afterCount} total)')
+def updateDB(data):
+    with sqlite3.connect('./data/sql.db') as conn:
+        beforeCount = countData(conn)
+        # Get cursor from connection
+        q = conn.cursor()
+        # Drop the temp table (if it exists)
+        q.execute(qryDropTemp)
+        # Create the temp table
+        q.execute(qryCreateTemp)
+        # For each dictionary in data, insert another entry into the temp table
+        for d in data:
+            tup = (d['timestamp'], d['hydro'], d['thermal'])
+            q.execute(qryInsertTemp, tup)
+        conn.commit()
+        # Start the second transaction
+        q.execute(qryTransfer)
+        # Drop the temp table
+        q.execute(qryDropTemp)
+        conn.commit()
+        afterCount = countData(conn)
+        print(f'Updated database: added {afterCount - beforeCount} records ({afterCount} total)')
+        return (afterCount - beforeCount)
     
 
 '''
@@ -127,30 +132,29 @@ def countData(conn):
     
 
 '''
-Connect to the DB as a singleton
+Add a line to the log file
 '''
-def singletonConnect():
-    global db
-    if db is not None:
-        return db
-    try:
-        db = sqlite3.connect('sql.db')
-    except Exception as e:
-        print(f'Failed to connect to database ./sql.db')
-    return db
+def logPrint(log_file_path, reported_current_time, update_count):
+    with open(log_file_path, 'a') as f:
+        current_utc_time = datetime.datetime.now(datetime.timezone.utc)
+        formatted_time = current_utc_time.strftime("%Y-%m-%d %H:%M:%S")
+        try:
+            f.write(f'[{formatted_time} UTC] Added {update_count} entries, reported at "{reported_current_time}"\n')
+        except Exception as e:
+            print(f'An error occurred while writing the log file:\n{e}')
 
 
 '''
 Single function to collect data and update the database
 '''
 def scrapeAndUpdate():
-    global db
-    db = singletonConnect()
-    data = getChartData(target_url)
-    updateDB(data, db)
+    (t, data) = getChartData(target_url)
+    update_count = updateDB(data)
+    logPrint('./data/scrape.log', t, update_count)
+
 
 if __name__ == '__main__':
     print(f'Running scraper on {target_url}')
-    db = sqlite3.connect('sql.db')
-    data = getChartData(target_url)
-    updateDB(data, db)
+    db = sqlite3.connect('./data/sql.db')
+    (t, data) = getChartData(target_url)
+    update_count = updateDB(data, db)

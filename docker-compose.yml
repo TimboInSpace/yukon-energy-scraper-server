@@ -9,7 +9,11 @@ services:
     networks:
       - reverse_proxy
     volumes:
-      - yukon-energy-data:/app
+      - yukon-energy-data:/app/data
+    # Uncomment this stuff for local testing:
+    #ports:
+    #  - 5000:5000
+    #entrypoint: ["/bin/ash", "-l"]
       
 volumes:
   yukon-energy-data: {}

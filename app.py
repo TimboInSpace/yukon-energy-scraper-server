@@ -38,12 +38,12 @@ def dump_csv(data, file_path):
 
 def recursive_scrape_data():
     scrapeAndUpdate()
-    Timer(60*60*3, recursive_scrape_data).start()
+    threading.Timer(60*60*12, recursive_scrape_data).start()
 
 
 @app.route('/', methods=['GET'])
 def index():
-    conn = sqlite3.connect('sql.db')
+    conn = sqlite3.connect('./data/sql.db')
     cursor = conn.cursor()
     try:
         # Query the data table
@@ -57,8 +57,13 @@ def index():
     finally:
         # Close the database connection
         conn.close()
-
-    return render_template('index.html', table_data=table_data, chart_data=chart_data)
+    log_file = ['Failed to read scraper log. Please contact your administrator.']
+    try:
+        with open('./data/scrape.log', 'r') as f:
+            log_file = f.readlines()
+    except Exception as e:
+        print(f'Filed to read scrape.log!')
+    return render_template('index.html', table_data=table_data, chart_data=chart_data, log_file=log_file)
 
 
 @app.route('/generate-csv', methods=['POST'])
@@ -66,7 +71,7 @@ def generate_csv():
     # Generate a unique UUID
     file_uuid = str(uuid.uuid4())
     file_path = f"csv/{file_uuid}.csv"
-    conn = sqlite3.connect('sql.db')
+    conn = sqlite3.connect('./data/sql.db')
     cursor = conn.cursor()
     try:
         # Query the data table
@@ -98,5 +103,5 @@ if __name__ == '__main__':
     # Scrape the data immediately. After that, it's on an "every 3 hours" schedule
     recursive_scrape_data()
     # Start up the http server
-    app.run(debug=False)
+    app.run(debug=False, host="yukon-energy", port=5000)
 
