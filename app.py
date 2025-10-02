@@ -47,7 +47,7 @@ def index():
     cursor = conn.cursor()
     try:
         # Query the data table
-        cursor.execute("SELECT timestamp, hydro, thermal, wind, solar FROM data ORDER BY timestamp ASC LIMIT 3000")
+        cursor.execute("SELECT * FROM (SELECT timestamp, hydro, thermal, wind, solar FROM data ORDER BY timestamp DESC LIMIT 2232) ORDER BY timestamp ASC")
         table_data = cursor.fetchall()
         chart_data = {
             "timestamps": [row[0] for row in table_data],
