@@ -2,7 +2,8 @@ FROM python:3.11-alpine
 
 # firefox-esr doesnt work for this!
 RUN apk update && apk upgrade
-RUN apk add --no-cache sqlite firefox vim
+#RUN apk add --no-cache sqlite firefox vim
+RUN apk add --no-cache sqlite vim
 
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
@@ -17,8 +18,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy the current directory contents into the container at /app
 COPY . .
 
+
 # Initialize the SQLite database if it doesn't exist
-RUN ls ./data | grep sql.db > /dev/null || cat schema.sql | sqlite3 ./data/sql.db
+RUN mkdir -p /app/data; ls ./data | grep sql.db > /dev/null || cat schema.sql | sqlite3 ./data/sql.db
 
 # Expose the port the app runs on
 EXPOSE 5000
