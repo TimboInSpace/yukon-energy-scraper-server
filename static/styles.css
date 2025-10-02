@@ -53,6 +53,12 @@ canvas {
 .table-responsive {
     max-height: 75vh;
     overflow-y: auto;
+    font-size: 0.6rem
+}
+@media screen and (min-width: 577px) {
+    .table-responsive {
+        font-size: 0.85rem
+    }
 }
 
 thead {

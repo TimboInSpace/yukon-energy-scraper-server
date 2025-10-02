@@ -1,12 +1,15 @@
 #!/usr/bin/python3
 import sqlite3
-import datetime
+from datetime import datetime, timezone, timedelta
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-target_url = 'https://yukonenergy.ca/consumption/chart.php?chart=hourly&width=500&height=600'
+my_tz = timezone(timedelta(hours=-7))  # MST
+
+#target_url = 'https://yukonenergy.ca/consumption/chart.php?chart=hourly&width=500&height=600'
+target_url = 'https://yukonenergy.ca/energy-in-yukon/electricity-101/electricity-generation'
 target_xpath = '/html/body/div[2]/div/div[1]/div/div/table'
 
 # Define the queries
@@ -25,8 +28,9 @@ def datetimeOf(strDate, strTime):
     s = f'{strTime.upper()} {strDate}'
     # Accept this format: 9:00 PM Tuesday, November 1, 2022
     format = '%I:%M %p %A, %B %d, %Y'
-    dt = datetime.datetime.strptime(s, format)
+    dt = datetime.strptime(s, format)
     return dt
+    
 
 
 '''
@@ -52,7 +56,8 @@ def getChartData(url):
     firefoxOptions.add_argument("--headless")
     firefoxOptions.add_argument("--no-sandbox")
     firefoxOptions.add_argument("--disable-dev-shm-usage")
-    service = Service("/app/geckodriver")
+    #service = Service("/app/geckodriver")
+    service = Service("./geckodriver")
     #driver = webdriver.Firefox(options=firefoxOptions, service=Service('/snap/bin/geckodriver'))
     driver = webdriver.Firefox(options=firefoxOptions, service=service)
     driver.implicitly_wait(0.5)
@@ -87,6 +92,16 @@ def getChartData(url):
     driver.quit()
     return (cur_dt, data)
 
+
+
+def getChartData2(url):
+    xpaths = {
+        'hydro': '/html/body/div[1]/div[2]/div[2]/div[2]/div[1]/div[1]/ul/li[1]/p',
+        'wind': '/html/body/div[1]/div[2]/div[2]/div[2]/div[1]/div[1]/ul/li[2]/p',
+        'solar': '/html/body/div[1]/div[2]/div[2]/div[2]/div[1]/div[1]/ul/li[3]/p',
+        'thermal': '/html/body/div[1]/div[2]/div[2]/div[2]/div[1]/div[1]/ul/li[4]/p'
+    }
+    
 
 '''
 Update the database with the data collected. Some of the data may have already been recorded. 
@@ -149,7 +164,7 @@ Single function to collect data and update the database
 '''
 def scrapeAndUpdate():
     (t, data) = getChartData(target_url)
-    update_count = updateDB(data)
+    #update_count = updateDB(data)
     logPrint('./data/scrape.log', t, update_count)
 
 

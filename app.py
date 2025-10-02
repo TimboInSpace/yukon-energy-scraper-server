@@ -5,7 +5,7 @@ import os
 import uuid
 import time
 import threading
-from scraper import scrapeAndUpdate
+from light_scraper import scrapeAndUpdate
 
 
 app = Flask(__name__)
@@ -27,13 +27,13 @@ def delete_csv_files(directory='./csv'):
 
 def dump_csv(data, file_path):
     with open(file_path, 'w', newline='') as csvfile:
-        fields = ['timestamp', 'hydro', 'thermal']
+        fields = ['timestamp', 'hydro', 'thermal', 'wind', 'solar']
         writer = csv.DictWriter(csvfile, fieldnames=fields)
         # Write the header
         writer.writeheader()
         # Write the rows
         for x in data:
-            writer.writerow({'timestamp':x[1], 'hydro':x[2], 'thermal':x[3]})
+            writer.writerow({'timestamp':x[1], 'hydro':x[2], 'thermal':x[3], 'wind':x[4], 'solar':x[5]})
             
 
 def recursive_scrape_data():
@@ -47,12 +47,14 @@ def index():
     cursor = conn.cursor()
     try:
         # Query the data table
-        cursor.execute("SELECT timestamp, hydro, thermal FROM data ORDER BY timestamp DESC LIMIT 3000")
+        cursor.execute("SELECT timestamp, hydro, thermal, wind, solar FROM data ORDER BY timestamp ASC LIMIT 3000")
         table_data = cursor.fetchall()
         chart_data = {
             "timestamps": [row[0] for row in table_data],
             "hydro": [row[1] for row in table_data],
             "thermal": [row[2] for row in table_data],
+            "wind": [row[3] for row in table_data],
+            "solar": [row[4] for row in table_data],
         }
     finally:
         # Close the database connection
